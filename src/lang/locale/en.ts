@@ -149,7 +149,7 @@ export default {
     YESTERDAY: "Yesterday",
     TODAY: "Today",
     TOMORROW: "Tomorrow",
-    FILES: "files ${count}",
+    FILES: "${count} files",
 
     // stats-modal.tsx
     STATS_TITLE: "Statistics",

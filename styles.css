@@ -291,3 +291,7 @@ body:not(.native-scrollbars) #sr-modal .modal-close-button {
     width: var(--size-4-4);
     justify-content: center;
 }
+
+.nav-folder-title {
+    position: relative;
+}
