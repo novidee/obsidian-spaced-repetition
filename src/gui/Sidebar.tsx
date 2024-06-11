@@ -235,7 +235,7 @@ export class ReviewQueueListView extends ItemView {
             }
         });
 
-        setTooltip(folderTitleEl, `${this.notesByDateCount[folderTitle]} files`, {
+        setTooltip(folderTitleEl, t("FILES", { count: this.notesByDateCount[folderTitle] }), {
             placement: "right",
         });
 
