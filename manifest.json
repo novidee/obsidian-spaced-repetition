@@ -1,5 +1,5 @@
 {
-    "id": "obsidian-spaced-repetition",
+    "id": "obsidian-spaced-repetition-my",
     "name": "Spaced Repetition",
     "version": "1.12.4",
     "minAppVersion": "0.15.4",
@@ -7,6 +7,5 @@
     "author": "Stephen Mwangi",
     "authorUrl": "https://github.com/st3v3nmw",
     "helpUrl": "https://www.stephenmwangi.com/obsidian-spaced-repetition/",
-    "isDesktopOnly": false,
-    "fundingUrl": "https://ko-fi.com/M4M44DEN6"
+    "isDesktopOnly": false
 }
