@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Menu, TFile } from "obsidian";
+import { ItemView, WorkspaceLeaf, TFile, Menu, setTooltip } from "obsidian";
 
 import type SRPlugin from "src/main";
 import { COLLAPSE_ICON } from "src/constants";
@@ -130,6 +130,8 @@ export class ReviewQueueListView extends ItemView {
                         this.changeFolderIconToExpanded(deckFolderEl);
                     }
 
+                    console.log("FOLR", folderTitle);
+
                     this.createRightPaneFile(
                         schedFolderEl,
                         sNote.note,
@@ -158,7 +160,7 @@ export class ReviewQueueListView extends ItemView {
         const folderTitleEl: HTMLDivElement = folderEl.createDiv("nav-folder-title");
         const childrenEl: HTMLDivElement = folderEl.createDiv("nav-folder-children");
         const collapseIconEl: HTMLDivElement = folderTitleEl.createDiv(
-            "nav-folder-collapse-indicator collapse-icon",
+            "sr-nav-folder-collapse-indicator collapse-icon",
         );
 
         collapseIconEl.innerHTML = COLLAPSE_ICON;
@@ -186,6 +188,9 @@ export class ReviewQueueListView extends ItemView {
                 }
             }
         });
+
+        setTooltip(folderTitleEl, `Hello ${childrenEl.childNodes.length}`, { placement: "right" });
+        console.log("NEWW", deck, {nodes: [...childrenEl.childNodes] });
 
         return folderEl;
     }
@@ -239,7 +244,7 @@ export class ReviewQueueListView extends ItemView {
     }
 
     private changeFolderIconToExpanded(folderEl: HTMLElement): void {
-        const collapseIconEl = folderEl.find("div.nav-folder-collapse-indicator");
+        const collapseIconEl = folderEl.find("div.sr-nav-folder-collapse-indicator");
         (collapseIconEl.childNodes[0] as HTMLElement).style.transform = "";
     }
 }

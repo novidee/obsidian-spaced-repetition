@@ -282,3 +282,12 @@ body:not(.native-scrollbars) #sr-modal .modal-close-button {
     appearance: menulist;
     border-right: 8px solid transparent;
 }
+
+.sr-nav-folder-collapse-indicator {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    margin-left: calc(-1 * var(--size-4-5));
+    width: var(--size-4-4);
+    justify-content: center;
+}
