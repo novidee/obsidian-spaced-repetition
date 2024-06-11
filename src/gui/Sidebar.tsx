@@ -9,6 +9,7 @@ export const REVIEW_QUEUE_VIEW_TYPE = "review-queue-list-view";
 
 export class ReviewQueueListView extends ItemView {
     private plugin: SRPlugin;
+    private notesByDateCount: Record<string, number>;
 
     constructor(leaf: WorkspaceLeaf, plugin: SRPlugin) {
         super(leaf);
@@ -16,6 +17,8 @@ export class ReviewQueueListView extends ItemView {
         this.plugin = plugin;
         this.registerEvent(this.app.workspace.on("file-open", () => this.redraw()));
         this.registerEvent(this.app.vault.on("rename", () => this.redraw()));
+
+        this.notesByDateCount = {};
     }
 
     public getViewType(): string {
@@ -40,11 +43,56 @@ export class ReviewQueueListView extends ItemView {
         });
     }
 
+    private calculateNotesCount(): void {
+        this.notesByDateCount = {};
+
+        for (const deckKey in this.plugin.reviewDecks) {
+            const deck: ReviewDeck = this.plugin.reviewDecks[deckKey];
+
+            this.notesByDateCount[deck.deckName] =
+                deck.newNotes.length + deck.scheduledNotes.length;
+
+            if (deck.newNotes.length > 0) {
+                this.notesByDateCount[t("NEW")] = deck.newNotes.length;
+            }
+
+            const now: number = Date.now();
+            const maxDaysToRender: number = this.plugin.data.settings.maxNDaysNotesReviewQueue;
+            let folderTitle = "";
+
+            deck.scheduledNotes.forEach(note => {
+                const nDays: number = Math.ceil((note.dueUnix - now) / (24 * 3600 * 1000));
+
+                if (nDays > maxDaysToRender) {
+                    return;
+                }
+
+                if (nDays === -1) {
+                    folderTitle = t("YESTERDAY");
+                } else if (nDays === 0) {
+                    folderTitle = t("TODAY");
+                } else if (nDays === 1) {
+                    folderTitle = t("TOMORROW");
+                } else {
+                    folderTitle = new Date(note.dueUnix).toDateString();
+                }
+
+                if (this.notesByDateCount[folderTitle] !== undefined) {
+                    this.notesByDateCount[folderTitle] += 1;
+                } else {
+                    this.notesByDateCount[folderTitle] = 1;
+                }
+            });
+        }
+    }
+
     public redraw(): void {
         const activeFile: TFile | null = this.app.workspace.getActiveFile();
 
         const rootEl: HTMLElement = createDiv("nav-folder mod-root");
         const childrenEl: HTMLElement = rootEl.createDiv("nav-folder-children");
+
+        this.calculateNotesCount();
 
         for (const deckKey in this.plugin.reviewDecks) {
             const deck: ReviewDeck = this.plugin.reviewDecks[deckKey];
@@ -95,23 +143,23 @@ export class ReviewQueueListView extends ItemView {
                 const maxDaysToRender: number = this.plugin.data.settings.maxNDaysNotesReviewQueue;
 
                 for (const sNote of deck.scheduledNotes) {
-                    if (sNote.dueUnix != currUnix) {
-                        const nDays: number = Math.ceil((sNote.dueUnix - now) / (24 * 3600 * 1000));
+                    const nDays: number = Math.ceil((sNote.dueUnix - now) / (24 * 3600 * 1000));
 
-                        if (nDays > maxDaysToRender) {
-                            break;
-                        }
+                    if (nDays > maxDaysToRender) {
+                        break;
+                    }
 
-                        if (nDays === -1) {
-                            folderTitle = t("YESTERDAY");
-                        } else if (nDays === 0) {
-                            folderTitle = t("TODAY");
-                        } else if (nDays === 1) {
-                            folderTitle = t("TOMORROW");
-                        } else {
-                            folderTitle = new Date(sNote.dueUnix).toDateString();
-                        }
+                    if (nDays === -1) {
+                        folderTitle = t("YESTERDAY");
+                    } else if (nDays === 0) {
+                        folderTitle = t("TODAY");
+                    } else if (nDays === 1) {
+                        folderTitle = t("TOMORROW");
+                    } else {
+                        folderTitle = new Date(sNote.dueUnix).toDateString();
+                    }
 
+                    if (sNote.dueUnix !== currUnix) {
                         schedFolderEl = this.createRightPaneFolder(
                             deckFolderEl,
                             folderTitle,
@@ -129,8 +177,6 @@ export class ReviewQueueListView extends ItemView {
                         this.changeFolderIconToExpanded(schedFolderEl);
                         this.changeFolderIconToExpanded(deckFolderEl);
                     }
-
-                    console.log("FOLR", folderTitle);
 
                     this.createRightPaneFile(
                         schedFolderEl,
@@ -189,8 +235,9 @@ export class ReviewQueueListView extends ItemView {
             }
         });
 
-        setTooltip(folderTitleEl, `Hello ${childrenEl.childNodes.length}`, { placement: "right" });
-        console.log("NEWW", deck, {nodes: [...childrenEl.childNodes] });
+        setTooltip(folderTitleEl, `${this.notesByDateCount[folderTitle]} files`, {
+            placement: "right",
+        });
 
         return folderEl;
     }
